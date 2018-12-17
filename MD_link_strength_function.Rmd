@@ -1,0 +1,142 @@
+---
+title: "Dimensional reduction"
+author: "Piotr Szefer"
+date: "September 15, 2017"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# What can I do with these framework?
+
+Secondary extinctions? I can generate random community with given distribution of traits. Trophic link strength is something invariant, independent on temporal and spatial dynamics.
+
+# Is the dimensionality reasonable
+
+```{r}
+A <- function(a0,tr,tc){
+  return(a0*exp(-1/2 * (dist(rbind(tr,tc),method = "euclidean"))^2))
+}
+
+# How it is approximated?
+a0 <- 0.5
+epsilon <- 3/4*a0
+
+# Region where a is never <= a0/4
+# Region where is never >= 3/4*a0
+# These are harmless, as any value in [0,a0] provides a valid 
+# approximiation of these
+vals <- seq(0,a0,length=100) # any of this values is a valid approximation of safe
+safe <- seq(a0/4, 3/4*a0, length=100)
+#vals + epsilon >= safe
+
+# These are the values of circles 
+#sqrt(-2*log(1/4)) # values bigger than a0/4
+#sqrt(-2*log(3/4)) # values smaller than 3*a0/4
+
+# If i pick any value between 0 and a0 i can be sure that I have approximated
+# some value from the region where A is never <= a0/4, and never >= 3*a0/4.
+tc <- c(5,5)
+
+rows <- seq(0,10,by=0.1)
+cols <- seq(0,10,by=0.1)
+
+M <- matrix(0, nrow = length(rows),
+            ncol=length(cols))
+for (row in 1:length(rows)){
+  for (col in 1:length(cols)){
+    M[row,col] <- A(a0, c(rows[row],cols[col]), tc)
+  }
+}
+
+rownames(M) <- rows
+colnames(M) <- cols
+
+# colours <- rep("red",length(M))
+# boolM <- (M < (3*a0/4) & M > a0/4)
+# as.vector(t(boolM))
+# colours[as.vector(boolM)] <- "blue"
+# 
+# library(rgl)
+# persp3d(M, col=colours)
+
+
+
+```
+
+Probability distributions or **empirical distributions** of data points over these spaces are assumed given.
+
+Following from Rossberg 2013 i have simulated all the elements necessary to evaluate and reduce the dimentionality of trophic niche spaces. I have build vulnerability $\mathbf{v}^{'}$ and foraging $\mathbf{f}^{'}$ trait vectors sampling from a normal distribution. They were sampled independently. So that $Cov(v_i^{'}, v_j^{'}) = \delta_{j,k}$.Vector $\mathbf{x}$ is a result of concatenation of vulnerability and foraging trait vectors:
+$$\mathbf{x} = \begin{pmatrix} \mathbf{v}^{'} \\ \mathbf{f}^{'} \end{pmatrix}$$
+As a link function following equation will be used:
+$$ A^{'}(\mathbf{v}^{'}, \mathbf{f}^{'}) = a_0^{'} \exp{ \left[ \mathbf{b}^{T}\mathbf{x} + \frac{1}{2}\mathbf{x}^T\mathbf{C}\mathbf{x} \right] } $$
+Symmetric matrix $\mathbf{C}$ and vector of constants $\mathbf{b}$ would have to be calculated from the empirical data of traits and link strengths.
+
+```{r}
+# Food webs and diversity
+
+Dprime <- 3
+v <- rnorm(Dprime) # Species R
+f <- rnorm(Dprime) # Species C
+
+x <- c(v,f)
+
+# I don tthink this is the community matrix, it is just the parameters matrix
+# which needs to be estimated.
+# To construct C matrices consult deRuiter and Fath 2007
+
+C_vals <- runif(((Dprime*2)^2 - Dprime*2)/2, min=-1,max=1)
+C <- matrix(0, nrow=Dprime*2, ncol=Dprime*2)
+C[upper.tri(C)] <- C_vals
+C <- C + t(C)
+diag(C) <- 1
+
+b <- c(rep(1,Dprime+Dprime))
+
+# Link strength between RC:
+A <- function(a0 = 1, b, x, C){
+  link_str <- a0 * exp(t(b) %*% x + 1/2 * t(x) %*% C %*% x)
+  return(link_str)
+}
+```
+
+```{r}
+# Decomposition of the equation:
+EC <- eigen(C)
+lambda <- EC$values
+u <- EC$vectors
+
+# Spectral value decomposition
+Crec <- matrix(0, nrow=Dprime*2, ncol=Dprime*2)
+Crec <- u %*% diag(lambda) %*% t(u)
+```
+
+Matrix C was decomposed using spectral value decomposition. And concatenated trait vectors $x$ were represented using eigenvectors of matrix C.
+
+$$ A^{'}(\mathbf{v}^{'}, \mathbf{f}^{'}) = a_0^{'} \exp{ \left[ \sum_{k=1}^{D^{'}} (\mathbf{b}^T\mathbf{u}_k)^{T}\mathbf{u}^T_k\mathbf{x} + \frac{1}{2}\sum_{k=}^{D^{'}}\lambda_k(\mathbf{u}^T_k\mathbf{x})^2 \right] }  $$
+Lets see what is going to happen if we use only few traits
+
+```{r}
+
+Adim <- function(a0 = 1, b,x,C, traits=10){
+  EC <- eigen(C)
+  EC <- eigen(C)
+  lambda <- EC$values
+  return(a0*exp((t(b) %*% u) %*% (t(u) %*% x) + 1/2 * (t(x)%*%u%*%diag(lambda)%*%t(u)%*%x)))
+}
+
+```
+
+Covariance matrix: $\sum = \mathbb{E} \left[ (\mathbf{X} - \mathbb{E} [\mathbf{X}] )(\mathbf{X} - \mathbb{E} [\mathbf{X}] )^{'} \right]$
+
+```{r}
+v = rnorm(10, 5,1)
+f = rnorm(10, 1,2)
+# Covariate matrix
+covM = function(v){1/length(v)*(v - mean(v)) %*% t(v - mean(v))}
+Q = covM(v - f)
+cov(v - f %*% t(v - f))
+```
