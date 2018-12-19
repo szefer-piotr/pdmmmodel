@@ -1,5 +1,5 @@
 rm(list = ls())
-source("C:/Users/Piotr Szefer/Desktop/Learning/food webs/Nagelkerke and Rossberg 2014 SUPL/NagelkerkeRossberg2014-RCode/nichespace.R")
+source("nagelkerke_rossberg_suppl/nagelkerke_rossberg_Rcode/nichespace.R")
 
 # Set some parameters for the random community ------
 n.r = 25

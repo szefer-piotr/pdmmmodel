@@ -67,6 +67,12 @@ colnames(M) <- cols
 
 ```
 
+# Identification of trophic traits
+
+True link strength function  $\widetilde{A}$ can be into a particular generic form. Procedure of dimensionality reduction removes then nearly all free parameters from the reduced kink-strength fnction. When the link strength function is given the structure of link strength matrices and so of food webs is a reflection of the **distribution of trophic traits in niche space**. One can attempt to determine this distribution either from observed phenotypes or using food web topologies alone.
+
+# Simulations
+
 Probability distributions or **empirical distributions** of data points over these spaces are assumed given.
 
 Following from Rossberg 2013 i have simulated all the elements necessary to evaluate and reduce the dimentionality of trophic niche spaces. I have build vulnerability $\mathbf{v}^{'}$ and foraging $\mathbf{f}^{'}$ trait vectors sampling from a normal distribution. They were sampled independently. So that $Cov(v_i^{'}, v_j^{'}) = \delta_{j,k}$.Vector $\mathbf{x}$ is a result of concatenation of vulnerability and foraging trait vectors:
