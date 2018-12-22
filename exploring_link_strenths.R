@@ -244,3 +244,18 @@ C.u <- cov.wt(t, wt=as.vector(rho.r*g), method="ML")
 # (Note: Since we are using weights, "ML" is the better choice!)
 mu.u <- C.u$center
 C.u <- C.u$cov
+
+
+# Check if standardization works for traits form crazy distributions and for the mixture
+# of distributions
+
+spec = 10
+trai = 6
+
+rbinom(trai, 1, p=0.7)
+rnorm(trai,10, 2)
+rexp(trai, 0.2)
+runif(trai)
+
+traitmat = matrix(0,nrow=spec, ncol = trai)
+traitmat[,1]
