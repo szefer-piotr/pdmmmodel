@@ -1,6 +1,51 @@
 rm(list = ls())
 source("nagelkerke_rossberg_suppl/nagelkerke_rossberg_Rcode/nichespace.R")
 
+# Plotting link strength function 
+
+A <- function(a0,tr,tc){
+  return(a0*exp(-1/2 * (dist(rbind(tr,tc),method = "euclidean"))^2))
+}
+
+# How it is approximated?
+a0 <- 0.5
+epsilon <- 3/4*a0
+
+# Region where a is never <= a0/4
+# Region where is never >= 3/4*a0
+# These are harmless, as any value in [0,a0] provides a valid 
+# approximiation of these
+vals <- seq(0,a0,length=100) # any of this values is a valid approximation of safe
+safe <- seq(a0/4, 3/4*a0, length=100)
+#vals + epsilon >= safe
+
+# These are the values of circles 
+#sqrt(-2*log(1/4)) # values bigger than a0/4
+#sqrt(-2*log(3/4)) # values smaller than 3*a0/4
+
+# If i pick any value between 0 and a0 i can be sure that I have approximated
+# some value from the region where A is never <= a0/4, and never >= 3*a0/4.
+tc <- c(5,5)
+
+rows <- seq(0,10,by=0.1)
+cols <- seq(0,10,by=0.1)
+
+M <- matrix(0, nrow = length(rows),
+            ncol=length(cols))
+for (row in 1:length(rows)){
+  for (col in 1:length(cols)){
+    M[row,col] <- A(a0, c(rows[row],cols[col]), tc)
+  }
+}
+rownames(M) <- rows
+colnames(M) <- cols
+colours <- rep("red",length(M))
+boolM <- (M < (3*a0/4) & M > a0/4)
+as.vector(t(boolM))
+colours[as.vector(boolM)] <- "blue"
+library(rgl)
+persp3d(M, col=colours)
+
 # Set some parameters for the random community ------
 n.r = 25
 n.c = 36
