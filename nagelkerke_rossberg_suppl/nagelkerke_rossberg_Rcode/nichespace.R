@@ -255,14 +255,14 @@ niche.quadratic.form <- function (traits.r,traits.c,interactions,
 
 #### Examples:
 ##
-## mock <- niche.mock.data() # compute random mock data
-##
-## QF <- niche.quadratic.form(mock$traits.r,mock$traits.c,mock$interactions)
-##
-## eigen(QF$C) # There is one dominant eigenvalue corresponding to a
-##             # single pair of trophic traits.  The corresponding
-##             # eigenvector (last column) shows which traits are involved.
-##
-## QF$a(c(1,2),c(0,2,1))  # compute an interaction strength
-##
-## niche.a(c(1,2),c(0,2,1),QF) # the same
+# mock <- niche.mock.data() # compute random mock data
+# 
+# QF <- niche.quadratic.form(mock$traits.r,mock$traits.c,mock$interactions)
+# 
+# eigen(QF$C) # There is one dominant eigenvalue corresponding to a
+            # single pair of trophic traits.  The corresponding
+            # eigenvector (last column) shows which traits are involved.
+
+# QF$a(c(1,2),c(0,2,1))  # compute an interaction strength
+# 
+# niche.a(c(1,2),c(0,2,1),QF) # the same

@@ -1,21 +1,21 @@
 ## Computations to construct trophic niche space for given selection
 ## of phenotypic traits.
 
-source("nichespace.R")
-source("functions.R")
+source("nagelkerke_rossberg_suppl/nagelkerke_rossberg_Rcode/nichespace.R")
+source("nagelkerke_rossberg_suppl/nagelkerke_rossberg_Rcode/functions.R")
 
 ## Read traits:
 resource.traits <-
-  as.matrix(read.table("Tana_Resource_Traits.dat",header=TRUE))
+  as.matrix(read.table("nagelkerke_rossberg_suppl/nagelkerke_rossberg_Rcode/Tana_Resource_Traits.dat",header=TRUE))
 consumer.traits <-
-  as.matrix(read.table("Tana_Consumer_Traits.dat",header=TRUE))
+  as.matrix(read.table("nagelkerke_rossberg_suppl/nagelkerke_rossberg_Rcode/Tana_Consumer_Traits.dat",header=TRUE))
 
 # Read interaction strength
 
 # Note: these are interaction per consumer individual, so we have to
 # assume consumer densities = 1
 
-diet.fractions <- read.table("Tana_Interaction_Strength.dat")/100
+diet.fractions <- read.table("nagelkerke_rossberg_suppl/nagelkerke_rossberg_Rcode/Tana_Interaction_Strength.dat")/100
 
 interactions <- t(diet.fractions)
 
@@ -41,7 +41,7 @@ weights.r <- rep(1,n.resources)
 
 ## Specify and double-check a set of dims + expanatory variables
 ## Specify by name:
-source("functions.R")
+source("nagelkerke_rossberg_suppl/nagelkerke_rossberg_Rcode/functions.R")
 dims.to.keep <- 4
 r.list <- "R_pelagic R_macrodim"
 c.list <- "Barbel Fork_length"
@@ -53,7 +53,7 @@ selected.consumer.traits <-
 cross.validate.a(dims.to.keep=dims.to.keep)
 
 # Fit the model
-source("nichespace.R")
+source("nagelkerke_rossberg_suppl/nagelkerke_rossberg_Rcode/nichespace.R")
 input.resource.traits <-
   cov.normalize(selected.resource.traits)
 input.consumer.traits <-
@@ -64,7 +64,7 @@ QF0 <- niche.quadratic.form(input.resource.traits,
                            ,weights.r=weights.r
                            ,rho.r=res.abundance[,]
                            )
-print(eigen(QF0$C)$values)
+sign <- eigen(QF0$C)$values
 
 # Truncate niche-space dimensions:
 QF <- delete.dims(as.integer(dims.to.keep),QF0)
@@ -98,7 +98,8 @@ for(c in 1:dim(input.consumer.traits)[1]){
 }
 
 # Compute weighted correlation:
-cov.wt(cbind(as.vector(as.matrix(aa)),as.vector(aa.true)),wt=rep(res.abundance,n.consumers)^2,cor=TRUE)$cor[1,2]
+cov.wt(cbind(as.vector(as.matrix(aa)),as.vector(aa.true)),
+       wt=rep(res.abundance,n.consumers)^2,cor=TRUE)$cor[1,2]
 
 # Compute plot of predicted vs observed diets, and R^2:
 plot(as.vector(t(t(diet.fractions[,]))),as.vector(predicted.diet[,]),xlim=c(0,1),ylim=c(0,1))
@@ -110,6 +111,13 @@ plot(as.vector(t(t(diet.fractions[,]))),as.vector(predicted.diet[,]),log="xy",xl
 
 # Re-construct trophic trait space:
 t.traits <- trophic.traits(input.resource.traits,input.consumer.traits,QF0,sel=dims.to.keep)
+
+# Covariance matrices from setction 11.1?
+v <- t(t(V)*abs(sign)^(1/2))
+Qv <- cov(v)
+f <- t(t(F)*abs(sign)^(1/2))
+Qf <- cov(f)
+Q <- Qv + Qf
 
 # The list t.traits now contains all info to work with and interpret
 # trophic traits.

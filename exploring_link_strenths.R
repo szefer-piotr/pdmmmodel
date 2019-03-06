@@ -63,6 +63,17 @@ mock <- niche.mock.data(n.r = 25,
 QF <- niche.quadratic.form(mock$traits.r,mock$traits.c,mock$interactions)
 
 
+# Can traits coming from any distribution be normalized using cov.normalize?
+source("nagelkerke_rossberg_suppl/nagelkerke_rossberg_Rcode/functions.R")
+traits <- mock$traits.r
+
+Q <- cov(traits)
+Q == t(Q)
+
+traits <- cbind(traits, rpois(dim(traits)[1],3), rnbinom(dim(traits)[1], 10, mu=5), runif(dim(traits)[1]))
+cov(traits)
+round(cov(cov.normalize(traits)), 3)
+
 # Extracting vectors and matrices ----------------------
 # What is x? x is any combination of resource and consumer 
 # traits concatenated together
